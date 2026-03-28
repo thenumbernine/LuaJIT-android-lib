@@ -1,0 +1,126 @@
+#!/usr/bin/env rua
+local Targets = require 'make.targets'
+local targets = Targets() --{verbose=true}
+
+local dirsort = |p|
+	table.wrapfor(p:dir())
+	:mapi(|vk| vk[1])
+	:sort(|a,b| a.path < b.path)	-- is < in Path already?
+
+local latest = |p| p/dirsort(p):last()
+
+--[[
+libArch = 'armeabi-v7a'						-- arch folder in lib/ / ANDROID_ABI
+ndkCrossPrefix = 'arm-linux-androideabi-'	-- arch prefix in NDK
+ndkcc = 'armv7a-linux-androideabi35-clang'
+hostCC = 'HOST_CC="gcc -m32"'
+--]]
+--[[
+libArch = 'arm64-v8a'
+ndkCrossPrefix = 'aarch64-linux-android-'
+ndkcc = 'aarch64-linux-android35-clang'
+--]]
+--[[
+libArch = 'x86'
+ndkCrossPrefix = 'i686-linux-android-'
+ndkcc = 'i686-linux-android35-clang'
+hostCC = 'HOST_CC="gcc -m32"'
+--]]
+-- [[
+libArch = 'x86_64'
+ndkCrossPrefix = 'x86_64-linux-android-'
+ndkcc = 'x86_64-linux-android35-clang'
+--]]
+
+home = path(os.home())
+androidSdkRoot = home/'Android/Sdk'
+androidNdkBin = latest(androidSdkRoot/'ndk')/'toolchains/llvm/prebuilt/linux-x86_64/bin'
+androidNdkCross = androidNdkBin/ndkCrossPrefix
+ndkccPath = androidNdkBin/ndkcc
+
+local exec = |...| assert(os.exec(...))	-- assert or nah?
+local cp = |...| exec('cp', ...)
+
+-- src loc
+srcDir = path'LuaJIT/src'
+
+-- dest loc
+-- how about dist/android/${libArch}/ ?
+distDir = path'dist'
+distArchDir = distDir/'android'/libArch
+distLibDir = distArchDir/'lib'
+distBinDir = distArchDir/'bin'
+distIncDir = distArchDir/'include'
+distJitDir = distArchDir/'jit'	-- or maybe 'share/jit'?
+
+luajit_so = distLibDir/'libluajit.so'
+
+targets:add{
+	dsts = {
+		luajit_so,
+		-- ... and the include/arch/ folder
+		-- ... and the jit/arch/ folder
+	},
+	srcs = table.wrapfor(srcDir:rdir())
+		:mapi(|vk| vk[1])
+		:filteri(|fn| select(2, fn:getext()) == 'c'),
+	rule = |r|do
+		exec(
+			'cd', srcDir,
+			'&& make clean',
+			'&& make\\\n',
+				'Q=\\\n',
+				'E="@:"',
+				'XCFLAGS=-DLUAJIT_ENABLE_LUA52COMPAT\\\n',
+				'TARGET_SONAME=libluajit.so\\\n',
+				'TARGET_DYLIBNAME=libluajit.dylib\\\n',
+				'TARGET_DLLNAME=luajit.dll\\\n',
+				'TARGET_DLLDOTANAME=libluajit.dll.a\\\n',
+				hostCC or '',
+				'CROSS='..androidNdkCross..'\\\n',
+				'STATIC_CC='..ndkccPath..'\\\n',
+				'DYNAMIC_CC="'..ndkccPath..' -fPIC"\\\n',
+				'TARGET_LD='..ndkccPath..'\\\n',
+				'TARGET_AR="'..androidNdkBin..'/llvm-ar rcus"\\\n',
+				'TARGET_STRIP='..androidNdkBin..'/llvm-strip'
+		)
+		
+		-- copy libraries:
+		distLibDir:mkdir(true) 
+		cp(
+			srcDir/'libluajit.so',
+			distLibDir/'libluajit.so')
+		cp(
+			srcDir/'libluajit.a',
+			distLibDir/'libluajit.a')
+		
+		-- copy binaries:
+		distBinDir:mkdir(true)
+		cp(
+			srcDir/'luajit',
+			distBinDir/'luajit')
+		
+		-- copy includes
+		distIncDir:mkdir(true)
+		for _,fn in ipairs{
+			'lauxlib.h',
+			'luaconf.h',
+			'lua.h',
+			'lua.hpp',
+			'luajit.h',
+			'lualib.h',
+			'lj_arch.h',
+		} do
+			cp(srcDir/fn, distIncDir)
+		end
+		distJitDir:mkdir(true)
+		cp((srcDir/'jit'):escape()..'/*.lua', distJitDir)
+	end,
+}
+
+target = ... or 'all'
+local f = ({
+	all = || targets:run(luajit_so),
+	clean = || exec('rm -fr', distDir),
+})[target]
+if f then f() else targets:run(target) end
