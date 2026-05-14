@@ -11,7 +11,7 @@ local latest = |p| p/dirsort(p):last()
 
 local arch = 'arm_64'
 -- writes libArch, ndkCrossPrefix, ndkccFn, hostCC:
-table.union(_G, dofile'config'(arch))
+table.union(_G, dofile'config.rua'(arch))
 
 
 home = path(os.home())
