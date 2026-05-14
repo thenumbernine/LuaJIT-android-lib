@@ -60,9 +60,14 @@ table.union(_G, ({
 home = path(os.home())
 androidSdkRoot = home/'Android/Sdk'
 androidNdkHome = latest(androidSdkRoot/'ndk')
-androidNdkBin = androidNdkHome/'toolchains/llvm/prebuilt/linux-x86_64/bin'
+androidNdkPrebuilt = androidNdkHome/'toolchains/llvm/prebuilt/linux-x86_64'
+androidNdkBin = androidNdkPrebuilt/'bin'
 androidNdkCross = androidNdkBin/ndkCrossPrefix
 ndkccPath = androidNdkBin/ndkccFn
+
+libcppshared_so = androidNdkPrebuilt/'sysroot/usr/lib'
+	/(ndkCrossPrefix:match'^(.*)%-$')	-- all but the last - ... maybe remove the last - ?
+	/'libc++_shared.so'
 
 androidCMakeToolchainFile = (androidNdkHome/'build/cmake/android.toolchain.cmake')
 assert(androidCMakeToolchainFile:exists())
