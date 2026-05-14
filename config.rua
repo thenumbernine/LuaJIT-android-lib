@@ -59,9 +59,13 @@ table.union(_G, ({
 
 home = path(os.home())
 androidSdkRoot = home/'Android/Sdk'
-androidNdkBin = latest(androidSdkRoot/'ndk')/'toolchains/llvm/prebuilt/linux-x86_64/bin'
+androidNdkHome = latest(androidSdkRoot/'ndk')
+androidNdkBin = androidNdkHome/'toolchains/llvm/prebuilt/linux-x86_64/bin'
 androidNdkCross = androidNdkBin/ndkCrossPrefix
 ndkccPath = androidNdkBin/ndkccFn
+
+androidCMakeToolchainFile = (androidNdkHome/'build/cmake/android.toolchain.cmake')
+assert(androidCMakeToolchainFile:exists())
 
 -- not used by luajit-lib, but everything else here is common to everyone else so why not...
 androidStudioRoot = home/'android-studio'
