@@ -3,12 +3,6 @@ default: all
 
 include Config.mk
 
-ANDROID_SDK_ROOT = $(HOME)/Android/Sdk
-ANDROID_NDK_VERSION = $(shell ls $(ANDROID_SDK_ROOT)/ndk | sort -nr | tail -1)
-ANDROID_NDK_BIN=$(ANDROID_SDK_ROOT)/ndk/$(ANDROID_NDK_VERSION)/toolchains/llvm/prebuilt/linux-x86_64/bin
-ANDROID_NDK_CROSS = $(ANDROID_NDK_BIN)/$(NDK_CROSS_PREFIX)
-NDKCC_PATH = $(ANDROID_NDK_BIN)/$(NDKCC)
-
 # src loc
 SRC_DIR = LuaJIT/src
 

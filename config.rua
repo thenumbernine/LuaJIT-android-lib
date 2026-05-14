@@ -1,3 +1,25 @@
+Targets = require 'make.targets'
+targets = Targets() --{verbose=true}
+
+dirsort = |p|
+	table.wrapfor(p:dir())
+	:mapi(|vk| vk[1])
+	:sort(|a,b| a.path < b.path)	-- is < in Path already?
+
+latest = |p| p/dirsort(p):last()
+
+--[[ verbose output.  comment out to disable.
+assert.eq(getmetatable(_G), nil)
+setmetatable(_G, {
+	__newindex = |t,k,v|do
+		print(k,'=',v)
+		rawset(t, k, v)
+	end,
+})
+--]]
+
+arch ??= 'arm_64'
+
 --[[
 this is the config for make.rua depending on arch, which can be of 4 dif values:
 	arm_32
@@ -5,31 +27,56 @@ this is the config for make.rua depending on arch, which can be of 4 dif values:
 	x86_32
 	x86_64
 --]]
-return function(arch)
-	return ({
-		arm_32 = {
-			libArch = 'armeabi-v7a',					-- arch folder in lib/ / ANDROID_ABI
-			ndkCrossPrefix = 'arm-linux-androideabi-',	-- arch prefix in NDK
-			ndkccFn = 'armv7a-linux-androideabi35-clang',
-			hostCC = 'HOST_CC="gcc -m32"',
-		},
-		arm_64 = {
-			libArch = 'arm64-v8a',
-			ndkCrossPrefix = 'aarch64-linux-android-',
-			ndkccFn = 'aarch64-linux-android35-clang',
-			hostCC = '',
-		},
-		x86_32 = {
-			libArch = 'x86',
-			ndkCrossPrefix = 'i686-linux-android-',
-			ndkccFn = 'i686-linux-android35-clang',
-			hostCC = 'HOST_CC="gcc -m32"',
-		},
-		x86_64 = {
-			libArch = 'x86_64',
-			ndkCrossPrefix = 'x86_64-linux-android-',
-			ndkccFn = 'x86_64-linux-android35-clang',
-			hostCC = '',
-		},
-	})![arch]
-end
+table.union(_G, ({
+	arm_32 = {
+		libArch = 'armeabi-v7a',					-- arch folder in lib/ / ANDROID_ABI
+		ndkCrossPrefix = 'arm-linux-androideabi-',	-- arch prefix in NDK
+		ndkccFn = 'armv7a-linux-androideabi35-clang',
+		hostCC = 'HOST_CC="gcc -m32"',
+	},
+	arm_64 = {
+		libArch = 'arm64-v8a',
+		ndkCrossPrefix = 'aarch64-linux-android-',
+		ndkccFn = 'aarch64-linux-android35-clang',
+		hostCC = '',
+	},
+	x86_32 = {
+		libArch = 'x86',
+		ndkCrossPrefix = 'i686-linux-android-',
+		ndkccFn = 'i686-linux-android35-clang',
+		hostCC = 'HOST_CC="gcc -m32"',
+	},
+	x86_64 = {
+		libArch = 'x86_64',
+		ndkCrossPrefix = 'x86_64-linux-android-',
+		ndkccFn = 'x86_64-linux-android35-clang',
+		hostCC = '',
+	},
+})![arch])
+
+-- common vars:
+-- maybe put them in another more foundational repo ...
+
+home = path(os.home())
+androidSdkRoot = home/'Android/Sdk'
+androidNdkBin = latest(androidSdkRoot/'ndk')/'toolchains/llvm/prebuilt/linux-x86_64/bin'
+androidNdkCross = androidNdkBin/ndkCrossPrefix
+ndkccPath = androidNdkBin/ndkccFn
+
+-- not used by luajit-lib, but everything else here is common to everyone else so why not...
+androidStudioRoot = home/'android-studio'
+buildToolsDir = latest(androidSdkRoot/'build-tools')
+androidJar = latest(androidSdkRoot/'platforms')/'android.jar'
+
+-- this is starting to look similar to lua-sh...
+exec = |...| assert(os.exec(...))	-- assert or nah?
+cp = |...| exec('cp', ...)
+rm = |...| exec('rm', ...)
+zip = |...| exec('zip', ...)
+javac = |...| exec(androidStudioRoot/'jbr/bin/javac', ...)
+aapt2 = |...| exec(buildToolsDir/'aapt2', ...)
+d8 = |...| exec(buildToolsDir/'d8', ...)
+zipalign = |...| exec(buildToolsDir/'zipalign', ...)
+apksigner = |...| exec(buildToolsDir/'apksigner', ...)
+adb = |...| exec(androidSdkRoot/'platform-tools/adb', ...)
+ndkcc = |...| exec(androidNdkBin/ndkccFn, ...)
