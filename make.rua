@@ -10,15 +10,15 @@ local dirsort = |p|
 local latest = |p| p/dirsort(p):last()
 
 local arch = 'arm_64'
--- writes libArch, ndkCrossPrefix, ndkcc, hostCC:
-table.union(_G, require'config'(arch))
+-- writes libArch, ndkCrossPrefix, ndkccFn, hostCC:
+table.union(_G, dofile'config'(arch))
 
 
 home = path(os.home())
 androidSdkRoot = home/'Android/Sdk'
 androidNdkBin = latest(androidSdkRoot/'ndk')/'toolchains/llvm/prebuilt/linux-x86_64/bin'
 androidNdkCross = androidNdkBin/ndkCrossPrefix
-ndkccPath = androidNdkBin/ndkcc
+ndkccPath = androidNdkBin/ndkccFn
 
 local exec = |...| assert(os.exec(...))	-- assert or nah?
 local cp = |...| exec('cp', ...)

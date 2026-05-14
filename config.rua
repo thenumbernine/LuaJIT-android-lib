@@ -10,25 +10,25 @@ return function(arch)
 		arm_32 = {
 			libArch = 'armeabi-v7a',					-- arch folder in lib/ / ANDROID_ABI
 			ndkCrossPrefix = 'arm-linux-androideabi-',	-- arch prefix in NDK
-			ndkcc = 'armv7a-linux-androideabi35-clang',
+			ndkccFn = 'armv7a-linux-androideabi35-clang',
 			hostCC = 'HOST_CC="gcc -m32"',
 		},
 		arm_64 = {
 			libArch = 'arm64-v8a',
 			ndkCrossPrefix = 'aarch64-linux-android-',
-			ndkcc = 'aarch64-linux-android35-clang',
+			ndkccFn = 'aarch64-linux-android35-clang',
 			hostCC = '',
 		},
 		x86_32 = {
 			libArch = 'x86',
 			ndkCrossPrefix = 'i686-linux-android-',
-			ndkcc = 'i686-linux-android35-clang',
+			ndkccFn = 'i686-linux-android35-clang',
 			hostCC = 'HOST_CC="gcc -m32"',
 		},
 		x86_64 = {
 			libArch = 'x86_64',
 			ndkCrossPrefix = 'x86_64-linux-android-',
-			ndkcc = 'x86_64-linux-android35-clang',
+			ndkccFn = 'x86_64-linux-android35-clang',
 			hostCC = '',
 		},
 	})![arch]
