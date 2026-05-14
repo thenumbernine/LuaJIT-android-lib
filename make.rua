@@ -9,28 +9,10 @@ local dirsort = |p|
 
 local latest = |p| p/dirsort(p):last()
 
---[[
-libArch = 'armeabi-v7a'						-- arch folder in lib/ / ANDROID_ABI
-ndkCrossPrefix = 'arm-linux-androideabi-'	-- arch prefix in NDK
-ndkcc = 'armv7a-linux-androideabi35-clang'
-hostCC = 'HOST_CC="gcc -m32"'
---]]
---[[
-libArch = 'arm64-v8a'
-ndkCrossPrefix = 'aarch64-linux-android-'
-ndkcc = 'aarch64-linux-android35-clang'
---]]
---[[
-libArch = 'x86'
-ndkCrossPrefix = 'i686-linux-android-'
-ndkcc = 'i686-linux-android35-clang'
-hostCC = 'HOST_CC="gcc -m32"'
---]]
--- [[
-libArch = 'x86_64'
-ndkCrossPrefix = 'x86_64-linux-android-'
-ndkcc = 'x86_64-linux-android35-clang'
---]]
+local arch = 'arm_64'
+-- writes libArch, ndkCrossPrefix, ndkcc, hostCC:
+table.union(_G, require'config'(arch))
+
 
 home = path(os.home())
 androidSdkRoot = home/'Android/Sdk'
@@ -76,7 +58,7 @@ targets:add{
 				'TARGET_DYLIBNAME=libluajit.dylib\\\n',
 				'TARGET_DLLNAME=luajit.dll\\\n',
 				'TARGET_DLLDOTANAME=libluajit.dll.a\\\n',
-				hostCC or '',
+				hostCC,
 				'CROSS='..androidNdkCross..'\\\n',
 				'STATIC_CC='..ndkccPath..'\\\n',
 				'DYNAMIC_CC="'..ndkccPath..' -fPIC"\\\n',
@@ -84,22 +66,22 @@ targets:add{
 				'TARGET_AR="'..androidNdkBin..'/llvm-ar rcus"\\\n',
 				'TARGET_STRIP='..androidNdkBin..'/llvm-strip'
 		)
-		
+
 		-- copy libraries:
-		distLibDir:mkdir(true) 
+		distLibDir:mkdir(true)
 		cp(
 			srcDir/'libluajit.so',
 			distLibDir/'libluajit.so')
 		cp(
 			srcDir/'libluajit.a',
 			distLibDir/'libluajit.a')
-		
+
 		-- copy binaries:
 		distBinDir:mkdir(true)
 		cp(
 			srcDir/'luajit',
 			distBinDir/'luajit')
-		
+
 		-- copy includes
 		distIncDir:mkdir(true)
 		for _,fn in ipairs{

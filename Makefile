@@ -1,29 +1,7 @@
 .PHONY: default
 default: all
 
-# arm 32
-LIB_ARCH = armeabi-v7a
-NDK_CROSS_PREFIX = arm-linux-androideabi-
-NDKCC = armv7a-linux-androideabi35-clang
-HOST_CC = HOST_CC="gcc -m32"
-
-# arm 64
-LIB_ARCH = arm64-v8a
-NDK_CROSS_PREFIX = aarch64-linux-android-
-NDKCC = aarch64-linux-android35-clang
-HOST_CC =
-
-# x86 32
-LIB_ARCH = x86
-NDK_CROSS_PREFIX = i686-linux-android-
-NDKCC = i686-linux-android35-clang
-HOST_CC = HOST_CC="gcc -m32"
-
-# x86 64
-LIB_ARCH = x86_64
-NDK_CROSS_PREFIX = x86_64-linux-android-
-NDKCC = x86_64-linux-android35-clang
-HOST_CC =
+include Config.mk
 
 ANDROID_SDK_ROOT = $(HOME)/Android/Sdk
 ANDROID_NDK_VERSION = $(shell ls $(ANDROID_SDK_ROOT)/ndk | sort -nr | tail -1)
