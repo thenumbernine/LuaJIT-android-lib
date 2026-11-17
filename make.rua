@@ -1,6 +1,18 @@
 #!/usr/bin/env rua
 
+target = ... or 'all'
 arch = 'arm_64'
+
+for k,v in pairs(cmdline) do
+	-- single args get assigned as [arg]=true and have boolean values
+	-- but k=v is assigned as [k]=v and have string/number values
+	if type(k) ~= 'number'	-- number keys are the original arg[]
+	and type(v) ~= 'boolean'
+	then
+		_G[k] = v
+	end
+end
+
 dofile'config.rua'
 
 -- src loc
@@ -80,7 +92,6 @@ targets:add{
 	end,
 }
 
-target = ... or 'all'
 local f = ({
 	all = || targets:run(luajit_so),
 	clean = || exec('rm -fr', distDir),

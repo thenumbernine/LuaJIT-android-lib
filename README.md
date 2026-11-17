@@ -14,3 +14,17 @@ Off that is the following:
 - `lib/` - has `libluajit.so` and `libluajit.a`
 - `include/` - has all the files needed for building C stuff with LuaJIT.
 - `jit` - has all the `.lua` files needed for `-j` to work.
+
+# Compiling
+
+I hope I am keeping the Makefile up to date.
+
+`make`
+
+Langfix-Lua build script works:
+
+`./make.rua all`
+
+...or for various archs:
+
+`./make.rua all arch=arm_64|arm_32|x86_64|x86_32`
