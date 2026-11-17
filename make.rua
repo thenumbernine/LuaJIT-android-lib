@@ -94,6 +94,7 @@ targets:add{
 
 local f = ({
 	all = || targets:run(luajit_so),
-	clean = || exec('rm -fr', distDir),
+	clean = || exec('cd', srcDir, '&& make clean'),
+	distclean = || exec('rm -fr', distDir),
 })[target]
 if f then f() else targets:run(target) end

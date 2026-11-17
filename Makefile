@@ -63,4 +63,8 @@ all: $(LUAJIT_SO)
 
 .PHONY: clean
 clean:
+	cd $(SRC_DIR) && make clean
+
+.PHONY: distclean
+distclean:
 	-rm -rf $(DIST_DIR)
